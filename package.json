@@ -12,7 +12,9 @@
   ],
   "version": "0.4.6",
   "main": "./lib/localize",
-  "dependencies": {},
+  "dependencies": {
+    "commander": "~2.1.0"
+  },
   "devDependencies": {
     "jshint": "~2.4.4",
     "istanbul": "~0.2.6",
