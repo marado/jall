@@ -3,59 +3,28 @@
 // Load required modules
 var fs = require('fs');
 var path = require('path');
-
-// Patch ``fs`` to use ``path.exists`` and ``path.existsSync`` if ``fs.exists`` and ``fs.existsSync`` don't exist.
-// Reason? So Node 0.8.x-compliant code still works on Node 0.6.x, 0.4.x, and possibly earlier.
-fs.exists = fs.exists ? fs.exists : path.exists;
-fs.existsSync = fs.existsSync ? fs.existsSync : path.existsSync;
+var commander = require('commander');
 
 // Use localize for internal localizations
 var localize = new require('../lib/localize')(__dirname);
 localize.throwOnMissingTranslation(false);
 var translate = localize.translate;
 
-// Defaults for ``xlocalize``
-var defaultLang = "en";
-var recurse = true;
-var extensions = ['html', 'js'];
-var outLangs = [];
-
-// Load arguments
-for(var i = 0; i < process.argv.length; i++) {
-    switch(process.argv[i]) {
-    case "-l":
-        defaultLang = process.argv[i+1];
-        break;
-    case "-r":
-        recurse = true;
-        break;
-    case "-R":
-        recurse = false;
-        break;
-    case "-e":
-        extensions = process.argv[i+1].split(",");
-        break;
-    case "-t":
-        outLangs = process.argv[i+1].split(",");
-        break;
-    case "-h":
-    case "--help":
-        console.log("xlocalize USAGE:\n");
-        console.log("-l\tSet the default language for the translations.json file(s) (default: en)");
-        console.log("-r\tSet xlocalize to generate translations.json files recursively (default)");
-        console.log("-R\tSet xlocalize to only generate a translations.json file for the current directory");
-        console.log("-e\tSet the file extensions to include for translation (default: html,js)");
-        console.log("-t\tSet the languages to translate to (comma separated)");
-        console.log("-h\tShow this help message.");
-        process.exit();
-        /* falls through */
-    default:
-        break;
-    }
+function list(str) {
+    return str.split(',');
 }
 
+commander
+    .version(require('../package.json').version)
+    .option('-l, --language <lang>', 'Set the default language for the translations.json file(s) (default: en)', 'en')
+    .option('-r, --recursive', 'Set xlocalize to generate translations.json files recursively (default: true)', true)
+    .option('-R, --no-recursive', 'Set xlocalize to generate a translations.json file for the current directory')
+    .option('-e, --extensions <exts>', 'Set the file extensions to include for translation (default: html,js)', list, ['html', 'js'])
+    .option('-t, --translate-to <langs>', 'Set the languages to translate to (comma separated)', list, [])
+    .parse(process.argv);
+
 // Set internal localize object to use the user's default language
-localize.setLocale(defaultLang);
+localize.setLocale(commander.language);
 
 // ## The *mergeObjs* function
 // is a helper function that clones the value of various object into a new one.
@@ -89,7 +58,7 @@ function processFile(filename, dirJSON) {
                 if(!dirJSON[RegExp.$1]) { // Does not yet exist
                     dirJSON[RegExp.$1] = {};
                 }
-                outLangs.forEach(function(lang) {
+                commander.translateTo.forEach(function(lang) {
                     if(!dirJSON[RegExp.$1][lang]) { // No translation, yet
                         dirJSON[RegExp.$1][lang] = translate("MISSING TRANSLATION");
                     }
@@ -97,7 +66,7 @@ function processFile(filename, dirJSON) {
             } else {
                 var translateMessage = translate("FOUND VARIABLE INPUT: $[1]", translatables[i]);
                 dirJSON[translateMessage] = {};
-                outLangs.forEach(function(lang) {
+                commander.translateTo.forEach(function(lang) {
                     dirJSON[translateMessage][lang] = translate("MISSING TRANSLATION");
                 });
             }
@@ -121,9 +90,9 @@ function processDir(dir) {
 
     // Build pattern matching for searchable files
     var extRegExpStr = "(";
-    for(var i = 0; i < extensions.length; i++) {
-        extRegExpStr += extensions[i];
-        if(i < extensions.length-1) { extRegExpStr += "|"; }
+    for(var i = 0; i < commander.extensions.length; i++) {
+        extRegExpStr += commander.extensions[i];
+        if(i < commander.extensions.length-1) { extRegExpStr += "|"; }
         else { extRegExpStr += ")$"; }
     }
     var extRegExp = new RegExp(extRegExpStr);
@@ -134,7 +103,7 @@ function processDir(dir) {
         if(fs.statSync(path.join(dir, file)).isFile() && extRegExp.test(file)) {
             processFile(path.join(dir, file), dirJSON);
         }
-        if(recurse && fs.statSync(path.join(dir, file)).isDirectory()) {
+        if(commander.recursive && fs.statSync(path.join(dir, file)).isDirectory()) {
             processDir(path.join(dir, file));
         }
     });
