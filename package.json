@@ -13,8 +13,9 @@
     "main": "./lib/localize",
     "dependencies": {},
     "devDependencies": {
-        "expresso": ">=0.8.1",
-        "jshint": "~2.4.4"
+        "jshint": "~2.4.4",
+        "istanbul": "~0.2.6",
+        "nodeunit": "~0.8.6"
     },
     "engines": {
         "node": "*"
@@ -24,6 +25,8 @@
     },
     "scripts": {
         "jshint": "jshint --verbose .",
-        "test": "npm run jshint && cd test && expresso localize.test.js && ./xlocalize.test.sh"
+        "test-lib": "istanbul --print=none cover nodeunit test/localize.test.js && istanbul report text",
+        "test-bin": "cd test && ./xlocalize.test.sh",
+        "test": "npm run jshint && npm run test-lib && npm run test-bin"
     }
 }
