@@ -2,6 +2,7 @@
   "name": "localize",
   "description": "A GNU gettext-inspired (but not conformant) localization library for Node.js",
   "homepage": "https://github.com/dfellis/node-localize",
+  "repository": "git@github.com:dfellis/node-localize",
   "author": "David Ellis <d.f.ellis@ieee.org>",
   "contributors": [
     "Steven Levithan",
