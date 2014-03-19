@@ -1,24 +1,29 @@
 {
-  "name": "localize",
-  "description": "A GNU gettext-inspired (but not conformant) localization library for Node.js",
-  "homepage": "https://github.com/AGROSICA/node-localize",
-  "author": "David Ellis",
-  "contributors": [
-    "Steven Levithan",
-    "Felix Geisendörfer",
-    "Clint Andrew Hall",
-    "Jerry Jalava"
-  ],
-  "version": "0.4.5",
-  "main": "./lib/localize",
-  "dependencies": {},
-  "devDependencies": {
-    "expresso": ">=0.8.1"
-  },
-  "engines": {
-    "node": "*"
-  },
-  "bin": {
-    "xlocalize": "./bin/xlocalize.js"
-  }
+    "name": "localize",
+    "description": "A GNU gettext-inspired (but not conformant) localization library for Node.js",
+    "homepage": "https://github.com/dfellis/node-localize",
+    "author": "David Ellis <d.f.ellis@ieee.org>",
+    "contributors": [
+        "Steven Levithan",
+        "Felix Geisendörfer",
+        "Clint Andrew Hall",
+        "Jerry Jalava"
+    ],
+    "version": "0.4.5",
+    "main": "./lib/localize",
+    "dependencies": {},
+    "devDependencies": {
+        "expresso": ">=0.8.1",
+        "jshint": "~2.4.4"
+    },
+    "engines": {
+        "node": "*"
+    },
+    "bin": {
+        "xlocalize": "./bin/xlocalize.js"
+    },
+    "scripts": {
+        "jshint": "jshint --verbose .",
+        "test": "npm run jshint && cd test && expresso localize.test.js && ./xlocalize.test.sh"
+    }
 }
