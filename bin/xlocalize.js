@@ -14,6 +14,12 @@ function list(str) {
     return str.split(',');
 }
 
+function log(message) {
+    if (commander.verbose) {
+        console.log(message);
+    }
+}
+
 commander
     .version(require('../package.json').version)
     .option('-l, --language <lang>', 'Set the default language for the translations.json file(s) (default: en)', 'en')
@@ -22,6 +28,7 @@ commander
     .option('-e, --extensions <exts>', 'Set the file extensions to include for translation (default: html,js)', list, ['html', 'js'])
     .option('-t, --translate-to <langs>', 'Set the languages to translate to (comma separated)', list, [])
     .option('-o, --output-dir <dir>', 'Set the output directory for the translations.json file(s) (default: current dir)', process.cwd())
+    .option('-v, --verbose', 'Verbose output (default: false)', false)
     .parse(process.argv);
 
 // Set internal localize object to use the user's default language
@@ -49,14 +56,20 @@ function mergeObjs() {
 // extracts all translatable pieces of a source file into the dirJSON object,
 // unless already there.
 function processFile(filename, dirJSON) {
+    // Check that we don't localize ourselves
+    if (filename == __filename) {
+        log('Skipping ' + filename);
+        return;
+    }
+    log('Processing ' + filename + '...');
     // Hacky, hacky RegExp parsing right now; replace with something better
     var fileContents = fs.readFileSync(filename, "utf8");
     var translatables = fileContents.match(/translate\s*\(.*\)/g);
-    console.log(translatables);
+    //console.log(translatables);
     if(translatables) {
         /* jshint loopfunc: true */
         for(var i = 0; i < translatables.length; i++) {
-            console.log(translatables[i]);
+            console.log(funParse(translatables[i], 'translate'));
             if(/^translate\s*\(\s*['"](.*)['"]$/.test(translatables[i])) { // A string-looking thing
                 if(!dirJSON[RegExp.$1]) { // Does not yet exist
                     dirJSON[RegExp.$1] = {};
@@ -77,11 +90,76 @@ function processFile(filename, dirJSON) {
     }
 }
 
-/*
-function funParse(string) {
-
+function funParse(string, fun) {
+    const states = {
+        INIT        : 0,
+        FUNC_FOUND  : 1,
+        FUNC_START  : 2,
+        FUNC_ARGS   : 3,
+        FUNC_STR    : 4
+    }
+    var state = states.INIT;
+    var content = [];
+    var buffer = '';
+    start = string.indexOf(fun);
+    if (start == -1)
+        return content;
+    for (var i = start; i < string.length; i++) {
+        c = string[i];
+        switch (state) {
+            case states.INIT:
+                if (c == ' ' || c == '\t') {
+                    buffer = '';
+                    break;
+                } else {
+                    buffer += c;
+                }
+                if (buffer == fun){
+                    buffer = '';
+                    state = states.FUNC_FOUND;
+                }
+                break;
+            case states.FUNC_FOUND:
+                if (c == '(') {
+                    state = states.FUNC_START;
+                } else if (c == ' ' || c == '\t') {
+                    break;
+                } else {
+                    state = states.INIT;
+                }
+                break;
+            case states.FUNC_START:
+                if (c == '"' || c == '\'') {
+                    state = states.FUNC_STR;
+                } else if (c != ' ' && c != '\t') {
+                    state = states.INIT; // First argument must be a string
+                }
+                break;
+            case states.FUNC_STR:
+                if (c == '"' || c == '\'') {
+                    content.push(buffer);
+                    buffer = '';
+                    state = states.FUNC_ARGS;
+                } else if (c == '\\') {
+                    i++;
+                } else {
+                    buffer += c;
+                }
+                break;
+            case states.FUNC_ARGS:
+                if (c == ')') {
+                    state = states.INIT;
+                    buffer = '';
+                    string = string.substring(i);
+                    var s = string.indexOf(fun);
+                    if (s == -1) {
+                        return content;
+                    }
+                }
+                break;
+        }
+    }
 }
-*/
 
 // ## The *processDir* function
 // generates a ``translations.json`` file for the current directory, but does
