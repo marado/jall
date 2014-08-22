@@ -1,4 +1,4 @@
-[![NPM version](https://badge.fury.io/js/localize.png)](http://badge.fury.io/js/localize) [![Build Status](https://travis-ci.org/dfellis/node-localize.png?branch=master)](https://travis-ci.org/dfellis/node-localize) [![Coverage Status](https://coveralls.io/repos/dfellis/node-localize/badge.png)](https://coveralls.io/r/dfellis/node-localize) [![Dependency Status](https://gemnasium.com/dfellis/node-localize.svg)](https://gemnasium.com/dfellis/node-localize)
+[![Build Status](https://travis-ci.org/Larnixva/node-localize.svg)](https://travis-ci.org/Larnixva/node-localize) [![Dependency Status](https://gemnasium.com/dfellis/node-localize.svg)](https://gemnasium.com/dfellis/node-localize)
 
 # The *node-localize* library
 provides a [GNU gettext](http://www.gnu.org/s/gettext/)-inspired (but not conformant) translation utility for [Node.js](http://nodejs.org) that tries to avoid some of the limitations of the ``sprintf``-bound ``gettext`` (such as translation string parameters being in a fixed order in all translation results) and "fit in" better than a straight port.
