@@ -15,13 +15,13 @@
   "version": "0.4.8",
   "main": "./lib/localize",
   "dependencies": {
-    "commander": "~2.1.0"
+    "commander": "~2.3.0"
   },
   "devDependencies": {
     "jshint": "~2.5.4",
-    "istanbul": "~0.2.6",
-    "nodeunit": "~0.8.6",
-    "coveralls": "~2.10.0",
+    "istanbul": "~0.3.0",
+    "nodeunit": "~0.9.0",
+    "coveralls": "~2.11.1",
     "mocha": "~1.21.4"
   },
   "engines": {

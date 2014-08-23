@@ -8,7 +8,7 @@ provides a [GNU gettext](http://www.gnu.org/s/gettext/)-inspired (but not confor
 If you have [npm](http://npmjs.org), just type:
 
 ```sh
-npm install localize
+npm install git://github.com/Larnixva/node-localize.git
 ```
 
 ## Usage
