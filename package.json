@@ -18,7 +18,7 @@
     "commander": "~2.1.0"
   },
   "devDependencies": {
-    "jshint": "~2.4.4",
+    "jshint": "~2.5.4",
     "istanbul": "~0.2.6",
     "nodeunit": "~0.8.6",
     "coveralls": "~2.10.0",
@@ -31,7 +31,7 @@
     "xlocalize": "./bin/xlocalize.js"
   },
   "scripts": {
-    "jshint": "jshint --verbose .",
+    "jshint": "jshint --verbose --exclude ./test .",
     "test-lib": "istanbul --print=none cover nodeunit test/localize.test.js && istanbul report text",
     "test-bin": "cd ./test/ && mocha ./xlocalize.test.js",
     "test": "npm run jshint && npm run test-lib && npm run test-bin",
