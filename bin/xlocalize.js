@@ -11,27 +11,6 @@ if (!stream.Transform) {
     stream = require('readable-stream');
 }
 
-var counter = 0;
-
-var liner = new stream.Transform( { objectMode: true } )
-
-liner._transform = function (chunk, encoding, done) {
-    var data = chunk.toString()
-    if (this._lastLineData)
-        data = this._lastLineData + data
-    var lines = data.split('\n')
-    this._lastLineData = lines.splice(lines.length-1,1)[0]
-    lines.forEach(this.push.bind(this))
-    done()
-}
- 
-liner._flush = function (done) {
-    if (this._lastLineData)
-        this.push(this._lastLineData)
-    this._lastLineData = null
-    done()
-}
-
 function list(str) {
     return str.split(',');
 }
@@ -46,6 +25,7 @@ function log(message) {
 // parses input files for occurences of function calls to
 // the localize function
 function parseFun (string, fun) {
+    /* jshint esnext: true */
     const states = {
         INIT            : 0,
         F_START         : 1,
@@ -53,7 +33,7 @@ function parseFun (string, fun) {
         F_ARG           : 3,
         F_ARG_STR       : 4,
         F_ARG_END       : 5
-    }
+    };
     var state  = states.F_START;
     var buffer = '';
     var quote  = '';
@@ -68,104 +48,107 @@ function parseFun (string, fun) {
         start += fun.length;
     }
     for (var i = start; i < string.length; i++) {
-        c = string[i];
+        var c = string[i];
+        /*jshint -W086 */
         switch (state)
         {
             // Finding first match
             case states.INIT:
-            start = string.indexOf(fun);
-            if (start === -1){
-                return final;
-            }
-            i = start + fun.length - 1;
-            state = states.F_START;
-            break;
+                start = string.indexOf(fun);
+                if (start === -1){
+                    return final;
+                }
+                i = start + fun.length - 1;
+                state = states.F_START;
+                break;
 
             // Beginning to parse, expecting '(' or whitespace
             case states.F_START:
-            if (c === '('){
-                state = states.F_ARG_START;
-            } else if (c !== ' ' || c !== '\t'){
-                buffer = '';
-            }
-            break;
+                if (c === '('){
+                    state = states.F_ARG_START;
+                } else if (c !== ' ' || c !== '\t'){
+                    buffer = '';
+                }
+                break;
 
             // Expecting function param start
             case states.F_ARG_START:
-            if (c !== ' ' && c !== '\t'){
-                state = states.F_ARG; /* fall through */
-            } else {
-                break;
-            }
+                if (c !== ' ' && c !== '\t'){
+                    state = states.F_ARG;
+                    /* falls through */
+                } else {
+                    break;
+                }
 
             // Expecting function param
             case states.F_ARG:
-            if (c === '('){
-                braces++;
-                break;
-            } else if (c === ')' || c === ','){
-                state = states.F_ARG_END;
-                /* fall through */
-            } else if (c === '"' || c === '\'') {
-                state = states.F_ARG_STR;
-                quote = c;
-                break;
-            } else if (c === ' ' || c === '\t') {
-                state = states.F_ARG_END;
-                break;
-            } else {
-                buffer += c;
-                break;
-            }
+                if (c === '('){
+                    braces++;
+                    break;
+                } else if (c === ')' || c === ','){
+                    state = states.F_ARG_END;
+                    /* falls through */
+                } else if (c === '"' || c === '\'') {
+                    state = states.F_ARG_STR;
+                    quote = c;
+                    break;
+                } else if (c === ' ' || c === '\t') {
+                    state = states.F_ARG_END;
+                    break;
+                } else {
+                    buffer += c;
+                    break;
+                }
 
             // Expecting end of arg (,)
             case states.F_ARG_END:
-            if (c === ','){
-                if (quote.length === 1){
-                    quote = '';
-                    args.push({ string : true, value : buffer});
-                } else {
-                    args.push({ string : false, value : buffer});
-                }
-                buffer = '';
-                state = states.F_ARG_START;
-            } else if (c === ')'){
-                if (braces > 0){
-                    braces--;
-                } else {
-                    // Function complete
+                if (c === ','){
                     if (quote.length === 1){
                         quote = '';
                         args.push({ string : true, value : buffer});
                     } else {
                         args.push({ string : false, value : buffer});
                     }
-                    final.push(args);
-                    // Re-initiate parser
-                    string = string.substring(++i);
-                    state  = states.INIT;
                     buffer = '';
-                    args   = [];
-                    i      = 0;
+                    state = states.F_ARG_START;
+                } else if (c === ')'){
+                    if (braces > 0){
+                        braces--;
+                    } else {
+                        // Function complete
+                        if (quote.length === 1){
+                            quote = '';
+                            args.push({ string : true, value : buffer});
+                        } else {
+                            args.push({ string : false, value : buffer});
+                        }
+                        final.push(args);
+                        // Re-initiate parser
+                        string = string.substring(++i);
+                        state  = states.INIT;
+                        buffer = '';
+                        args   = [];
+                        i      = 0;
+                    }
+                } else if (c !== ' ' && c !== '\t') {
+                    state = states.INIT;
+                    string = string.substring(i);
                 }
-            } else if (c !== ' ' && c !== '\t') {
-                state = states.INIT;
-                string = string.substring(i);
-            }
-            break;
+                break;
 
             // Expecting string or end of string
             case states.F_ARG_STR:
-            if (c === quote){
-                // End of string
-                state = states.F_ARG_END;
-            } else if (c === '\\') {
-                buffer += string[++i];
-            } else {
-                buffer += c;
-            }
-            break;
+                if (c === quote){
+                    // End of string
+                    state = states.F_ARG_END;
+                } else if (c === '\\') {
+                    buffer += string[++i];
+                } else {
+                    buffer += c;
+                }
+                break;
         }
+        /*jshint +W086 */
     }
     return final;
 }
@@ -206,6 +189,23 @@ function mergeObjs() {
 // extracts all translatable pieces of a source file into the dirJSON object,
 // unless already there.
 function processFile (filename, dirJSON, cb) {
+    var liner = new stream.Transform( { objectMode: true } );
+    liner._transform = function (chunk, encoding, done) {
+        var data = chunk.toString();
+        if (this._lastLineData)
+            data = this._lastLineData + data;
+        var lines = data.split('\n');
+        this._lastLineData = lines.splice(lines.length-1,1)[0];
+        lines.forEach(this.push.bind(this));
+        done();
+    };
+     
+    liner._flush = function (done) {
+        if (this._lastLineData)
+            this.push(this._lastLineData);
+        this._lastLineData = null;
+        done();
+    };
     // Do not process itself
     if (filename === __filename) {
         log('Skipping ' + filename);
@@ -222,19 +222,18 @@ function processFile (filename, dirJSON, cb) {
     var filestream = fs.createReadStream(filename);
     filestream.pipe(liner);
     liner.on('readable', function () {
-        var line
+        var line;
+        /*jshint -W084 */
         while (line = liner.read()) {
             funs = funs.concat(parseFun(line, commander.functionName));
         }
+        /*jshint +W084 */
     });
     liner.on('end', function () {
-        console.log(funs);
         if(funs) {
             /* jshint loopfunc: true */
             for(var i = 0; i < funs.length; i++) {
                 var args = funs[i];
-                console.log("ARGS: ");
-                console.log(args[0].string);
                 if (args.length === 0)
                     continue;
                 if (args[0].string){
@@ -270,56 +269,7 @@ function processFile (filename, dirJSON, cb) {
             cb(dirJSON);
         }
     });
-    //console.log(funs);
-    /*
-    if (translatables) {
-        jshint loopfunc: true 
-        for (var i = 0; i < translatables.length; i++) {
-            var trans_arr = translatables[i];
-        };
-    }
-    */
 }
-
-// ## The *processFile* function
-// extracts all translatable pieces of a source file into the dirJSON object,
-// unless already there.
-/*
-function processFile(filename, dirJSON) {
-    // Check that we don't localize ourselves
-    if (filename == __filename) {
-        log('Skipping ' + filename);
-        return;
-    }
-    log('Processing ' + filename + '...');
-    // Hacky, hacky RegExp parsing right now; replace with something better
-    var fileContents = fs.readFileSync(filename, "utf8");
-    var translatables = fileContents.match(/translate\s*\(.*\)/g);
-    //console.log(translatables);
-    if(translatables) {
-        // jshint loopfunc: true
-        for(var i = 0; i < translatables.length; i++) {
-            console.log(funParse(translatables[i], 'translate'));
-            if(/^translate\s*\(\s*['"](.*)['"]$/.test(translatables[i])) { // A string-looking thing
-                if(!dirJSON[RegExp.$1]) { // Does not yet exist
-                    dirJSON[RegExp.$1] = {};
-                }
-                commander.translateTo.forEach(function(lang) {
-                    if(!dirJSON[RegExp.$1][lang]) { // No translation, yet
-                        dirJSON[RegExp.$1][lang] = translate("MISSING TRANSLATION");
-                    }
-                });
-            } else {
-                var translateMessage = translate("FOUND VARIABLE INPUT: $[1]", translatables[i]);
-                dirJSON[translateMessage] = {};
-                commander.translateTo.forEach(function(lang) {
-                    dirJSON[translateMessage][lang] = translate("MISSING TRANSLATION");
-                });
-            }
-        }
-    }
-}
-*/
 
 // ## The *processDir* function
 // generates a ``translations.json`` file for the current directory, but does
@@ -348,24 +298,15 @@ function processDir(dir) {
     var files = fs.readdirSync(dir);
     files.forEach(function(file) {
         if(fs.statSync(path.join(dir, file)).isFile() && extRegExp.test(file)) {
-            counter++;
-            console.log("INC Counter to " + counter);
-            console.log("Call processFile " + path.join(dir, file));
-            processFile(path.join(dir, file), dirJSON, function(dirJSON){
-                counter--;
-                console.log(counter);
-                if (counter === 0){
-                    fs.writeFileSync(translations, JSON.stringify(dirJSON, null, "  "), "utf8");
-                } 
+            processFile(path.join(dir, file), dirJSON, function(transl){
+                fs.writeFileSync(translations, JSON.stringify(transl, null, "  "), "utf8");
             });
         }
-        if(commander.recursive && fs.statSync(path.join(dir, file)).isDirectory() && file != '.git') {
+        if(commander.recursive && fs.statSync(path.join(dir, file)).isDirectory() && file !== '.git') {
+            // Output dirJSON to file
             processDir(path.join(dir, file));
         }
     });
-
-    // Output dirJSON to file
-    //fs.writeFileSync(translations, JSON.stringify(dirJSON, null, "	"), "utf8");
 }
 
 // Get the ball rollin'
