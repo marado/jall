@@ -286,5 +286,10 @@ function processDir(dir) {
     });
 }
 
+// Check if dir exists
+if (commander.outputPath && !fs.existsSync(commander.outputPath)) {
+    fs.mkdirSync(commander.outputPath);
+}
+
 // Get the ball rollin'
 processDir(process.cwd());
