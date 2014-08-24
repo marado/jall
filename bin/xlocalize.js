@@ -236,22 +236,16 @@ function processDir(dir) {
         var currJSON = JSON.parse(fs.readFileSync(translations, "utf8"));
         dirJSON = currJSON;
     }
-    
-
-    // Build pattern matching for searchable files
-    // Fixme: Remove regex, do it properly
-    var extRegExpStr = "(";
-    for(var i = 0; i < commander.extensions.length; i++) {
-        extRegExpStr += commander.extensions[i];
-        if(i < commander.extensions.length-1) { extRegExpStr += "|"; }
-        else { extRegExpStr += ")$"; }
-    }
-    var extRegExp = new RegExp(extRegExpStr);
 
     // Process files in the current directory
     var files = fs.readdirSync(dir);
     files.forEach(function(file) {
-        if(fs.statSync(path.join(dir, file)).isFile() && extRegExp.test(file)) {
+        var fileExt = '';
+        var i = file.lastIndexOf('.');
+        if (i !== -1){
+            fileExt = file.substring(i + 1);
+        }
+        if(fs.statSync(path.join(dir, file)).isFile() && (commander.extensions.indexOf(fileExt) !== -1)) {
             processFile(path.join(dir, file), dirJSON, function(funs){
                 if(fs.existsSync(translations)) {
                     var currJSON = JSON.parse(fs.readFileSync(translations, "utf8"));
