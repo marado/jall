@@ -168,24 +168,6 @@ commander
     .parse(process.argv);
 
 
-// ## The *processFile* function
-// extracts all translatable pieces of a source file into the dirJSON object,
-// unless already there.
-function processFile (filename, dirJSON, cb) {
-    // Do not process itself
-    if (filename === __filename) {
-        log('Skipping ' + filename);
-        if (cb){
-            cb(dirJSON);
-        }
-        return;
-    }
-
-    // Process files
-    log('Processing ' + filename + '...');
-    readAndParse(filename, cb);
-}
-
 function readAndParse(filename, cb) {
     var funs = [];
     var liner = new stream.Transform( { objectMode: true } );
@@ -229,6 +211,24 @@ function readAndParse(filename, cb) {
             cb(funs);
         }
     });
+}
+
+// ## The *processFile* function
+// extracts all translatable pieces of a source file into the dirJSON object,
+// unless already there.
+function processFile (filename, dirJSON, cb) {
+    // Do not process itself
+    if (filename === __filename) {
+        log('Skipping ' + filename);
+        if (cb){
+            cb(dirJSON);
+        }
+        return;
+    }
+
+    // Process files
+    log('Processing ' + filename + '...');
+    readAndParse(filename, cb);
 }
 
 // ## The *processDir* function
