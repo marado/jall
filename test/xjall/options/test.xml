@@ -1,0 +1,6 @@
+<note>
+	<to>Tove</to>
+	<from>Jani</from>
+	<heading>Reminder</heading>
+	<body><%= translate('Don\'t forget to buy some milk.') %></body>
+</note>

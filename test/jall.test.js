@@ -1,8 +1,9 @@
-var Localize = require('../lib/localize');
+/* jshint undef: false, unused: false */
+var Localize = require('../lib/jall');
+var assert = require('assert');
 
-module.exports = {
-    'test empty initialization error': function(assert) {
-        assert.expect(1);
+describe('test empty initialization error', function() {
+    it('should throw an error', function(done) {
         assert.throws(function() {
             var badLocalize = new Localize();
             badLocalize.will.never.be.run.here();
@@ -13,10 +14,12 @@ module.exports = {
             }
             return false;
         });
-        assert.done();
-    },
-    'test bad translations var error': function(assert) {
-        assert.expect(1);
+        done();
+    });
+});
+
+describe('test bad translations var error', function() {
+    it('should throw an error', function(done) {
         assert.throws(function() {
             var badLocalize = new Localize([1,2,3]);
             badLocalize.will.never.be.run.here();
@@ -27,10 +30,12 @@ module.exports = {
             }
             return false;
         });
-        assert.done();
-    },
-    'test bad translations path error': function(assert) {
-        assert.expect(1);
+        done();
+    });
+});
+
+describe('test bad translations path error', function() {
+    it('should throw an error', function(done) {
         assert.throws(function() {
             var badLocalize = new Localize("/nowheresville");
             badLocalize.will.never.be.run.here();
@@ -41,10 +46,12 @@ module.exports = {
             }
             return false;
         });
-        assert.done();
-    },
-    'test good translations var': function(assert) {
-        assert.expect(1);
+        done();
+    });
+});
+
+describe('test good translations var', function() {
+    it('should not throw an error', function(done) {
         assert.doesNotThrow(function() {
             var goodLocalize = new Localize({
                 "Testing...": {
@@ -53,18 +60,22 @@ module.exports = {
             });
             return goodLocalize;
         });
-        assert.done();
-    },
-    'test good translations path': function(assert) {
-        assert.expect(1);
+        done();
+    });
+});
+
+describe('test good translations path', function() {
+    it('should not throw an error', function(done) {
         assert.doesNotThrow(function() {
             var goodLocalize = new Localize("./test/translations");
             return goodLocalize;
         });
-        assert.done();
-    },
-    'test bad setLocale var': function(assert) {
-        assert.expect(1);
+        done();
+    });
+});
+
+describe('test bad setLocale var', function() {
+    it('should throw an error', function(done) {
         assert.throws(function() {
             var goodLocalize = new Localize("./test/translations");
             goodLocalize.setLocale(23);
@@ -75,18 +86,22 @@ module.exports = {
             }
             return false;
         });
-        assert.done();
-    },
-    'test good setLocale var': function(assert) {
-        assert.expect(1);
+        done();
+    });
+});
+
+describe('test good setLocale var', function() {
+    it('should not throw an error', function(done) {
         assert.doesNotThrow(function() {
             var goodLocalize = new Localize("./test/translations");
             goodLocalize.setLocale("es");
         });
-        assert.done();
-    },
-    'test bad translate string': function(assert) {
-        assert.expect(1);
+        done();
+    });
+});
+
+describe('test bad translate string', function() {
+    it('should throw an error', function(done) {
         assert.throws(function() {
             var goodLocalize = new Localize("./test/translations");
             goodLocalize.setLocale("es");
@@ -98,49 +113,93 @@ module.exports = {
             }
             return false;
         });
-        assert.done();
-    },
-    'test good translate string': function(assert) {
-        assert.expect(2);
+        done();
+    });
+});
+
+describe('test good translate string', function() {
+    var goodLocalize;
+    it('should not throw an error', function(done) {
         assert.doesNotThrow(function() {
-            var goodLocalize = new Localize("./test/translations");
+            goodLocalize = new Localize("./test/translations");
             goodLocalize.setLocale("es");
-            assert.strictEqual(goodLocalize.translate("Testing..."), "Pruebas...");
+            goodLocalize.translate("Testing...");
         });
-        assert.done();
-    },
-    'test good translate nop': function(assert) {
-        assert.expect(1);
-        var goodLocalize = new Localize("./test/translations");
+        done();
+    });
+    it('should return the correct translation', function(done) {
+        assert.strictEqual(goodLocalize.translate("Testing..."), "Pruebas...");
+        done();
+    });
+});
+
+describe('test good translate nop', function() {
+    var goodLocalize;
+    it('should not throw an error', function(done) {
+        assert.doesNotThrow(function() {
+            goodLocalize = new Localize("./test/translations");
+            goodLocalize.translate("Testing...");
+        });
+        done();
+    });
+    it('should return the correct translation', function(done) {
         assert.strictEqual(goodLocalize.translate("Testing..."), "Testing...");
-        assert.done();
-    },
-    'test good translate substitution': function(assert) {
-        assert.expect(2);
-        var goodLocalize = new Localize("./test/translations");
+        done();
+    });
+});
+
+describe('test good translate substitution', function() {
+    var goodLocalize;
+    it('should not throw an error', function(done) {
+        assert.doesNotThrow(function() {
+            goodLocalize = new Localize("./test/translations");
+            goodLocalize.translate("Substitution: $[1]", 5);
+            goodLocalize.setLocale("es");
+            goodLocalize.translate("Substitution: $[1]", 5);
+            goodLocalize.setLocale("en");
+        });
+        done();
+    });
+    it('should return the correct translation', function(done) {
         assert.strictEqual(goodLocalize.translate("Substitution: $[1]", 5), "Substitution: 5");
         goodLocalize.setLocale("es");
         assert.strictEqual(goodLocalize.translate("Substitution: $[1]", 5), "Sustitución: 5");
-        assert.done();
-    },
-    'test good translate multiple substitution': function(assert) {
-        assert.expect(2);
-        var goodLocalize = new Localize("./test/translations");
+        done();
+    });
+});
+
+describe('test good translate multiple substitution', function() {
+    var goodLocalize;
+    it('should not throw an error', function(done) {
+        assert.doesNotThrow(function() {
+            goodLocalize = new Localize("./test/translations");
+            goodLocalize.translate("Multiple substitution: $[1], $[2]", 5, 25);
+            goodLocalize.setLocale("es");
+            goodLocalize.translate("Multiple substitution: $[1], $[2]", 5, 25);
+            goodLocalize.setLocale("en");
+        });
+        done();
+    });
+    it('should return the correct translation', function(done) {
         assert.strictEqual(goodLocalize.translate("Multiple substitution: $[1], $[2]", 5, 25), "Multiple substitution: 5, 25");
         goodLocalize.setLocale("es");
         assert.strictEqual(goodLocalize.translate("Multiple substitution: $[1], $[2]", 5, 25), "Sustitución múltiple: 5, 25");
-        assert.done();
-    },
-    'test bad dateFormat var initialization': function(assert) {
-        assert.expect(1);
+        done();
+    });
+});
+
+describe('test good dateFormat var initialization', function() {
+    it('should not throw an error', function(done) {
         assert.doesNotThrow(function() {
             var goodLocalize = new Localize("./test/translations", 25);
             return goodLocalize;
         });
-        assert.done();
-    },
-    'test bad dateFormat var post-initialization': function(assert) {
-        assert.expect(1);
+        done();
+    });
+});
+
+describe('test bad dateFormat var post-initialization', function() {
+    it('should throw an error', function(done) {
         assert.throws(function() {
             var badLocalize = new Localize("./test/translations", 25);
             badLocalize.loadDateFormats(25);
@@ -151,10 +210,12 @@ module.exports = {
             }
             return false;
         });
-        assert.done();
-    },
-    'test good dateFormat var post-initialization': function(assert) {
-        assert.expect(1);
+        done();
+    });
+});
+
+describe('test good dateFormat var post-initialization', function() {
+    it('should not throw an error', function(done) {
         assert.doesNotThrow(function() {
             var goodLocalize = new Localize("./test/translations");
             goodLocalize.loadDateFormats({
@@ -173,12 +234,16 @@ module.exports = {
                 }
             });
         });
-        assert.done();
-    },
-    'test good localDate': function(assert) {
-        assert.expect(4);
-        var theDate = new Date("4-Jul-1776");
-        var goodLocalize = new Localize("./test/translations");
+        done();
+    });
+});
+
+describe('test good localDate', function() {
+    var theDate;
+    var goodLocalize;
+    it('should not throw an error', function(done) {
+        theDate = new Date("4-Jul-1776");
+        goodLocalize = new Localize("./test/translations");
         goodLocalize.loadDateFormats({
             "es": {
                 dayNames: [
@@ -194,27 +259,51 @@ module.exports = {
                 }
             }
         });
+        done();
+    });
+    it('should provide right dates', function(done) {
         assert.strictEqual(goodLocalize.localDate(theDate), "Thu Jul 04 1776 00:00:00");
         assert.strictEqual(goodLocalize.localDate(theDate, "fullDate"), "Thursday, July 4, 1776");
         assert.strictEqual(goodLocalize.localDate(theDate, "mm/dd/yyyy"), "07/04/1776");
         goodLocalize.setLocale("es");
         assert.strictEqual(goodLocalize.localDate(theDate), "Jueves, 4 de Julio 1776");
-        assert.done();
-    },
-    'test good missing translation ignore': function(assert) {
-        assert.expect(1);
-        var goodLocalize = new Localize("./test/translations");
-        goodLocalize.throwOnMissingTranslation(false);
-        goodLocalize.setLocale("es");
+        done();
+    });
+});
+
+describe('test missing translation ignore', function() {
+    var goodLocalize;
+    it('should not throw an error', function(done) {
+        assert.doesNotThrow(function() {
+            goodLocalize = new Localize("./test/translations");
+            goodLocalize.throwOnMissingTranslation(false);
+            goodLocalize.setLocale("es");
+            goodLocalize.translate("Not found");
+        });
+        done();
+    });
+    it('should pass the translation string from argument to return', function(done) {
         assert.strictEqual(goodLocalize.translate("Not found"), "Not found");
-        assert.done();
-    },
-    'test translations dir': function(assert) {
-        assert.expect(2);
-        var goodLocalize = new Localize('./test/translations');
+        done();
+    });
+});
+
+describe('test translation strings txt files', function() {
+    var goodLocalize;
+    it('should not throw an error', function(done) {
+        assert.doesNotThrow(function() {
+            goodLocalize = new Localize('./test/translations');
+            goodLocalize.translate(goodLocalize.strings.helloWorld);
+            goodLocalize.setLocale("es");
+            goodLocalize.translate(goodLocalize.strings.helloWorld);
+            goodLocalize.setLocale("en");
+        });
+        done();
+    });
+    it('should provide right translations from the string.txts', function(done) {
         assert.strictEqual(goodLocalize.translate(goodLocalize.strings.helloWorld), "Hello, World!\n");
         goodLocalize.setLocale("es");
         assert.strictEqual(goodLocalize.translate(goodLocalize.strings.helloWorld), "¡Hola, mundo!\n");
-        assert.done();
-    }
-};
+        done();
+    });
+});

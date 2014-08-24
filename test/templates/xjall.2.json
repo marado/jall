@@ -2,7 +2,6 @@
 	"You called foo!": {
 		"en": "You called foo!",
 		"de": "Foo wurde aufgerufen!",
-		"pt": "ptptptptpt",
-		"es": "MISSING TRANSLATION"
+		"pt": "Foo foi executado!"
 	}
 }

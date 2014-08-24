@@ -1,12 +1,12 @@
 {
 	"This page is in English.": {
 		"en": "This page is in English.",
-		"de": "Diese Seite ist auf Englisch.",
-		"pt": "ptptptptpt"
+		"de": "Diese Seite ist deutsch.",
+		"pt": "Esta página é em português."
 	},
 	"You called foo!": {
 		"en": "You called foo!",
 		"de": "Foo wurde aufgerufen!",
-		"pt": "ptptptptpt"
+		"pt": "Foo foi executado!"
 	}
 }

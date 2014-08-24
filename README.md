@@ -1,6 +1,6 @@
-[![Build Status](https://travis-ci.org/Larnixva/node-localize.svg)](https://travis-ci.org/Larnixva/node-localize) [![Dependency Status](https://gemnasium.com/dfellis/node-localize.svg)](https://gemnasium.com/dfellis/node-localize)
+[![Build Status](https://travis-ci.org/Larnixva/jall.svg)](https://travis-ci.org/Larnixva/jall) [![Dependency Status](https://gemnasium.com/Larnixva/jall.svg)](https://gemnasium.com/Larnixva/jall)
 
-# The *node-localize* library
+# The *jall* library
 provides a [GNU gettext](http://www.gnu.org/s/gettext/)-inspired (but not conformant) translation utility for [Node.js](http://nodejs.org) that tries to avoid some of the limitations of the ``sprintf``-bound ``gettext`` (such as translation string parameters being in a fixed order in all translation results) and "fit in" better than a straight port.
 
 ## Installation
@@ -8,15 +8,15 @@ provides a [GNU gettext](http://www.gnu.org/s/gettext/)-inspired (but not confor
 If you have [npm](http://npmjs.org), just type:
 
 ```sh
-npm install git://github.com/Larnixva/node-localize.git
+npm install jall
 ```
 
 ## Usage
 
-``node-localize`` returns an object constructor so multiple simultaneous localization objects may be in use at once (though most cases will probably be a singleton instantiation). The only required parameter on initialization is a ``translations`` object, using the following structure:
+``jall`` returns an object constructor so multiple simultaneous localization objects may be in use at once (though most cases will probably be a singleton instantiation). The only required parameter on initialization is a ``translations`` object, using the following structure:
 
 ```js
-var Localize = require('localize');
+var Localize = require('jall');
 
 var myLocalize = new Localize({
     "Testing...": {
@@ -39,12 +39,12 @@ myLocalize.setLocale("sr");
 console.log(myLocalize.translate("Substitution: $[1]", 5)); // замена: 5
 ```
 
-``node-localize`` objects can also be passed a string indicating the directory a ``translations.json`` file can be found. This directory is searched recursively for all ``translations.json`` files in all subdirectories, and their contents combined together, so you can organize your translations as you wish.
+``jall`` objects can also be passed a string indicating the directory a ``translations.json`` file can be found. This directory is searched recursively for all ``translations.json`` files in all subdirectories, and their contents combined together, so you can organize your translations as you wish.
 
 The directory is also searched recursively for directories named ``translations``. These directories are checked for special text files of the form ``varname.txt``, ``varname.es.txt``, ``varname.sr.txt``, etc. The text in ``varname.txt`` is treated as the default language of the application and the ``varname.xx.txt`` are treated as translations of the text. A special ``strings`` object is created where the ``varname`` becomes a property of that object and the default language text is the value of the property. So you can also do the following:
 
 ```js
-var Localize = require('localize');
+var Localize = require('jall');
 
 var myLocalize = new Localize('./path/to/text/files/');
 
@@ -85,7 +85,7 @@ dateLocalize.setLocale("es");
 console.log(dateLocalize.localDate(theDate)); // Jueves, 4 de Julio 1776
 ```
 
-The date formatting rules and configuration have been taken from [node-dateformat](https://github.com/felixge/node-dateformat), which has been extended to support multiple simultaneous locales and subsumed into ``node-localize``.
+The date formatting rules and configuration have been taken from [node-dateformat](https://github.com/felixge/node-dateformat), which has been extended to support multiple simultaneous locales and subsumed into ``jall``.
 
 ## Complete API
 
@@ -172,30 +172,32 @@ myLocalize.strings
 // exist in code.
 ```
 
-## _xlocalize_ CLI Utility
+## _xjall_ CLI Utility
 
-Starting at version 0.2.0, ``node-localize``, when installed via NPM, adds an ``xlocalize`` utility command to the _PATH_, which allows for automatic construction of ``translations.json`` files (and can be re-run in the future to update existing files without clobbering any current translations present). It's command switches are as follows:
+Starting at version 0.2.0, ``jall``, when installed via NPM, adds an ``xjall`` utility command to the _PATH_, which allows for automatic construction of ``translations.json`` files (and can be re-run in the future to update existing files without clobbering any current translations present). It's command switches are as follows:
 
 ```
-xlocalize USAGE:
+xjall USAGE:
 
--l	Set the default language for the translations.json file(s) (default: en)
--r	Set xlocalize to generate translations.json files recursively (default)
--R	Set xlocalize to only generate a translations.json file for the current directory
+-r	Set xjall to generate translations.json files recursively (default)
+-R	Set xjall to only generate a translations.json file for the current directory
 -e	Set the file extensions to include for translation (default: html,js)
 -t	Set the languages to translate to (comma separated)
+-o  Put the translations.json only in specified directory
+-v  Verbose output (default: false)
+-f  Set the translation function name (default: translate)
 -h	Show this help message.
 ```
 
 For example, to create a ``translations.json`` file in the current directory only that will translate from English to Spanish, Portuguese, Italian, and French for HTML and JS files:
 
 ```sh
-xlocalize -R -t es,pt,it,fr
+xjall -R -t es,pt,it,fr
 ```
 
 And if a new language, such as Serbian, is to be translated at a later time, you can use the command:
 ```sh
-xlocalize -R -t es,pt,it,fr,sr
+xjall -R -t es,pt,it,fr,sr
 ```
 
 ## [Express](http://expressjs.com) Integration Tips
@@ -205,14 +207,10 @@ If your website supports multiple languages (probably why you're using this libr
 ### Middleware to switch locale on request
 
 ```js
-app.configure(function() {
-    ...
-    app.use(function(request, response, next) {
-        var lang = request.session.lang || "en";
-        localize.setLocale(lang);
-        next();
-    });
-    ...
+app.use(function(request, response, next) {
+    var lang = request.session.lang || "en";
+    myLocalize.setLocale(lang);
+    next();
 });
 ```
 
@@ -221,12 +219,9 @@ I'm assuming you're storing their language preference inside of a session, but t
 ### Export *translate*, *localDate*, and *strings* as static helpers
 
 ```js
-app.helpers({
-    ...
-    translate: localize.translate,
-    localDate: localize.localDate,
-    strings: localize.strings
-});
+app.locals.translate = myLocalize.translate,
+app.locals.localDate = myLocalize.localDate,
+app.locals.strings = myLocalize.strings
 ```
 
 Your controllers shouldn't really even be aware of any localization issues; the views should be doing that, so this ought to be enough configuration within your ``app.js`` file.
@@ -234,41 +229,41 @@ Your controllers shouldn't really even be aware of any localization issues; the 
 ### Using *translate*, *localDate*, and *strings* in your views
 
 ```html
-<h1>${translate("My Awesome Webpage")}</h1>
+<h1><%= translate("My Awesome Webpage") %></h1>
 
-<h2>${translate("By: $[1]", webpageAuthor)}</h2>
+<h2><%= translate("By: $[1]", webpageAuthor) %></h2>
 
-<h3>${translate("Published: $[1]", localDate(publicationDate))}</h3>
+<h3><%= translate("Published: $[1]", localDate(publicationDate)) %></h3>
 
-{{if translate(strings.reallyLongPost) == strings.reallyLongPost}}
-<strong>${translate("Warning: The following content is in English.")}</strong>
-{{/if}}
+<% if translate(strings.reallyLongPost) == strings.reallyLongPost { %>
+<strong><%= translate("Warning: The following content is in English.") %></strong>
+<% } %>
 
-{{html translate(strings.reallyLongPost)}}
+<%= translate(strings.reallyLongPost) %>
 ```
 
-I'm using [jQuery Templates for Express](https://github.com/kof/node-jqtpl) here, but it should be easy to translate to whatever templating language you prefer.
+I'm using [ejs](https://github.com/visionmedia/ejs) here, but it should be easy to translate to whatever templating language you prefer.
 
-### Easy exporting of *node-localize* library to client without copying library into own source
+### Easy exporting of *jall* library to client without copying library into own source
 
-Since node-localize can also run inside of the browser, and so can jQuery Templates, it can be quite useful to be able to export the library to the client. But rather than manually copying the library code into your website (and keeping track of updates/bugfixes manually), you can get the source code of node-localize directly from the library and add an Express route for it:
+Since jall can also run inside of the browser, and so can jQuery Templates, it can be quite useful to be able to export the library to the client. But rather than manually copying the library code into your website (and keeping track of updates/bugfixes manually), you can get the source code of jall directly from the library and add an Express route for it:
 
 ```js
-app.get('/js/localize.js', function(req, res) {
+app.get('/js/jall.js', function(req, res) {
     res.send(Localize.source);
 });
 ```
 
-Where ``Localize`` is equivalent to ``require('localize')``, not an instantiated localize object.
+Where ``Localize`` is equivalent to ``require('jall')``, not an instantiated localize object.
 
-If you're using node-localize on the client in this fashion, it would be wise to add ``getTranslations`` and ``getDateFormats`` to the ``app.helpers`` object, so views can specify which translations and date formatting they need the client to have to function properly.
+If you're using jall on the client in this fashion, it would be wise to add ``getTranslations`` and ``getDateFormats`` to the ``app.helpers`` object, so views can specify which translations and date formatting they need the client to have to function properly.
 
 ## Planned Features
 
 * Optional Country Code support (that falls back to baseline language translation if a specific country code is missing) for regional language differences
 * Numeric localization (1,234,567.89 versus 1.234.567,89 versus 1 234 567,89 versus [Japanese Numerals](http://en.wikipedia.org/wiki/Japanese_numerals) [no idea how to handle that one at the moment])
 * Currency localization; not just representing $100.00 versus 100,00$, but perhaps hooking into currency conversion, as well.
-* Pluralization; one area gettext still beats node-localize is the ability to pluralize words correctly when given the number to pluralize against.
+* Pluralization; one area gettext still beats jall is the ability to pluralize words correctly when given the number to pluralize against.
 
 ## License (MIT)
 
