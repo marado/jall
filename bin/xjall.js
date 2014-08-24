@@ -11,6 +11,8 @@ if (!stream.Transform) {
     stream = require('readable-stream');
 }
 
+var filelimit = 200;
+
 function list(str) {
     return str.split(',');
 }
@@ -170,6 +172,22 @@ commander
 // extracts all translatable pieces of a source file into the dirJSON object,
 // unless already there.
 function processFile (filename, dirJSON, cb) {
+    // Do not process itself
+    if (filename === __filename) {
+        log('Skipping ' + filename);
+        if (cb){
+            cb(dirJSON);
+        }
+        return;
+    }
+
+    // Process files
+    log('Processing ' + filename + '...');
+    readAndParse(filename, cb);
+}
+
+function readAndParse(filename, cb) {
+    var funs = [];
     var liner = new stream.Transform( { objectMode: true } );
     liner._transform = function (chunk, encoding, done) {
         var data = chunk.toString();
@@ -187,19 +205,14 @@ function processFile (filename, dirJSON, cb) {
         this._lastLineData = null;
         done();
     };
-    // Do not process itself
-    if (filename === __filename) {
-        log('Skipping ' + filename);
-        if (cb){
-            cb(dirJSON);
-        }
+
+    if (filelimit === 0){
+        process.nextTick(function () {
+            readAndParse(filename, cb);
+        });
         return;
     }
-
-    var funs = [];
-
-    // Process files
-    log('Processing ' + filename + '...');
+    filelimit--;
     var filestream = fs.createReadStream(filename);
     filestream.pipe(liner);
     liner.on('readable', function () {
@@ -212,6 +225,7 @@ function processFile (filename, dirJSON, cb) {
     });
     liner.on('end', function () {
         if (cb){
+            filelimit++;
             cb(funs);
         }
     });
