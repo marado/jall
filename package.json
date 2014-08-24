@@ -28,9 +28,9 @@
     "xjall": "./bin/xjall.js"
   },
   "scripts": {
-    "jshint": "jshint --verbose .",
-    "test-lib": "mocha test/jall.test.js",
-    "test-bin": "mocha test/xjall.test.js",
+    "jshint": "./node_modules/jshint/bin/jshint --verbose .",
+    "test-lib": "./node_modules/mocha/bin/mocha test/jall.test.js",
+    "test-bin": "./node_modules/mocha/bin/mocha test/xjall.test.js",
     "test": "npm run jshint && npm run test-lib && npm run test-bin"
   }
 }
