@@ -223,11 +223,12 @@ function processFile (filename, dirJSON, cb) {
 function processDir(dir) {
     // JSON object for the current directory
     var dirJSON = {};
+    var translations;
     // Path where translations will go
     if (commander.outputPath){
-        var translations = path.join(commander.outputPath, "translations.json");
+        translations = path.join(commander.outputPath, "translations.json");
     } else {
-        var translations = path.join(dir, "translations.json");
+        translations = path.join(dir, "translations.json");
     }
     // Check for pre-existing ``translations.json`` file
     
