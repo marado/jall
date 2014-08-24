@@ -1,6 +1,13 @@
 Changelog
 =========
 
+## Version [0.4.9](https://github.com/Larnixva/jall/releases/tag/v0.4.9)
+- **Changed**
+  - _xlocalize:_ Create folder if it doesn't exist
+  - _Package:_ Fixed links in package.json
+  - _Package:_ Fixed script paths in package.json
+  - _Package:_ Version bump
+
 ## Version [0.4.8](https://github.com/Larnixva/jall/releases/tag/v0.4.8)
 - **Added**
   - _xlocalize:_ Option (`-o, --output-path <path>`) to specify output path

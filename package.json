@@ -12,7 +12,7 @@
     "Jerry Jalava",
     "Marvin Scholz"
   ],
-  "version": "0.4.8",
+  "version": "0.4.9",
   "main": "./lib/jall",
   "dependencies": {
     "commander": "~2.3.0"
