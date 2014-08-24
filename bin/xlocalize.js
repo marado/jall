@@ -156,33 +156,14 @@ function parseFun (string, fun) {
 // Setup the argument parser and the options
 commander
     .version(require('../package.json').version)
-    .option('-l, --language <lang>', 'Set the default language for the translations.json file(s) (default: en)', 'en')
     .option('-r, --recursive', 'Set xlocalize to generate translations.json files recursively (default: true)', true)
     .option('-R, --no-recursive', 'Set xlocalize to generate a translations.json file for the current directory')
     .option('-e, --extensions <exts>', 'Set the file extensions to include for translation (default: html,js)', list, ['html', 'js'])
     .option('-t, --translate-to <langs>', 'Set the languages to translate to (comma separated)', list, [])
-    .option('-o, --output-dir <dir>', 'Set the output directory for the translations.json file(s) (default: current dir)', process.cwd())
+    .option('-o, --output-path <path>', 'Put the translations.json only in specified output directory')
     .option('-v, --verbose', 'Verbose output (default: false)', false)
-    .option('--function-name <name>', 'Set the translation function name (default: translate)', 'translate')
+    .option('-f, --function-name <name>', 'Set the translation function name (default: translate)', 'translate')
     .parse(process.argv);
-
-// ## The *mergeObjs* function
-// is a helper function that clones the value of various object into a new one.
-// This simplistic one is fast, but assumes no recursive objects to merge.
-function mergeObjs() {
-    var outObj = {};
-    for(var i in arguments) {
-        if(arguments[i] instanceof Object) {
-            /* jshint forin: false */
-            for(var j in arguments[i]) {
-                // Does not check for collisions, newer object
-                // definitions clobber old definitions
-                outObj[j] = arguments[i][j];
-            }
-        }
-    }
-    return outObj;
-}
 
 
 // ## The *processFile* function
@@ -230,43 +211,8 @@ function processFile (filename, dirJSON, cb) {
         /*jshint +W084 */
     });
     liner.on('end', function () {
-        if(funs) {
-            /* jshint loopfunc: true */
-            for(var i = 0; i < funs.length; i++) {
-                var args = funs[i];
-                if (args.length === 0)
-                    continue;
-                if (args[0].string){
-                    var s = args[0].value;
-                    if(!dirJSON[s]) { // Does not yet exist
-                        dirJSON[s] = {};
-                    }
-                    commander.translateTo.forEach(function(lang) {
-                        if(!dirJSON[s][lang]) { // No translation, yet
-                            dirJSON[s][lang] = "MISSING TRANSLATION";
-                        }
-                    });
-                } else {
-                    // FIXME !!!
-                    // Detect if string or variable
-                    // If variable: "FOUND VARIABLE INPUT: "
-                    // If String and vars: String as key, var placeholders in transl.
-                    var translateMessage = "FOUND VARIABLE INPUT: " + args[0];
-                    /*
-                    for (var j = 1; j <= funs[i].length; j++) {
-                        var el = funs[i][j];
-                        translateMessage += "$[" + j + "] " + "(" + el + ")";
-                    };
-                    */
-                    dirJSON[translateMessage] = {};
-                    commander.translateTo.forEach(function(lang) {
-                        dirJSON[translateMessage][lang] = "MISSING TRANSLATION";
-                    });
-                }
-            }
-        }
         if (cb){
-            cb(dirJSON);
+            cb(funs);
         }
     });
 }
@@ -278,14 +224,21 @@ function processDir(dir) {
     // JSON object for the current directory
     var dirJSON = {};
     // Path where translations will go
-    var translations = path.join(dir, "translations.json");
+    if (commander.outputPath){
+        var translations = path.join(commander.outputPath, "translations.json");
+    } else {
+        var translations = path.join(dir, "translations.json");
+    }
     // Check for pre-existing ``translations.json`` file
+    
     if(fs.existsSync(translations)) {
         var currJSON = JSON.parse(fs.readFileSync(translations, "utf8"));
-        dirJSON = mergeObjs(dirJSON, currJSON);
+        dirJSON = currJSON;
     }
+    
 
     // Build pattern matching for searchable files
+    // Fixme: Remove regex, do it properly
     var extRegExpStr = "(";
     for(var i = 0; i < commander.extensions.length; i++) {
         extRegExpStr += commander.extensions[i];
@@ -298,8 +251,37 @@ function processDir(dir) {
     var files = fs.readdirSync(dir);
     files.forEach(function(file) {
         if(fs.statSync(path.join(dir, file)).isFile() && extRegExp.test(file)) {
-            processFile(path.join(dir, file), dirJSON, function(transl){
-                fs.writeFileSync(translations, JSON.stringify(transl, null, "  "), "utf8");
+            processFile(path.join(dir, file), dirJSON, function(funs){
+                if(fs.existsSync(translations)) {
+                    var currJSON = JSON.parse(fs.readFileSync(translations, "utf8"));
+                    dirJSON = currJSON;
+                }
+                if(funs) {
+                    /* jshint loopfunc: true */
+                    for(var i = 0; i < funs.length; i++) {
+                        var args = funs[i];
+                        if (args.length === 0)
+                            continue;
+                        if (args[0].string){
+                            var s = args[0].value;
+                            if(!dirJSON[s]) { // Does not yet exist
+                                dirJSON[s] = {};
+                            }
+                            commander.translateTo.forEach(function(lang) {
+                                if(!dirJSON[s][lang]) { // No translation, yet
+                                    dirJSON[s][lang] = "MISSING TRANSLATION";
+                                }
+                            });
+                        } else {
+                            var translateMessage = "FOUND VARIABLE INPUT: " + args[0];
+                            dirJSON[translateMessage] = {};
+                            commander.translateTo.forEach(function(lang) {
+                                dirJSON[translateMessage][lang] = "MISSING TRANSLATION";
+                            });
+                        }
+                    }
+                }
+                fs.writeFileSync(translations, JSON.stringify(dirJSON, null, "  "), "utf8");
             });
         }
         if(commander.recursive && fs.statSync(path.join(dir, file)).isDirectory() && file !== '.git') {
@@ -310,4 +292,4 @@ function processDir(dir) {
 }
 
 // Get the ball rollin'
-processDir(commander.outputDir);
+processDir(process.cwd());
