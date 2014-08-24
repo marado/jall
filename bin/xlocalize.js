@@ -1,14 +1,36 @@
 #!/usr/bin/env node
 
 // Load required modules
-var fs = require('fs');
-var path = require('path');
+var fs        = require('fs');
+var path      = require('path');
 var commander = require('commander');
+var stream    = require('stream');
 
-// Use localize for internal localizations
-var localize = new require('../lib/localize')(__dirname);
-localize.throwOnMissingTranslation(false);
-var translate = localize.translate;
+// Node 0.8 fallback
+if (!stream.Transform) {
+    stream = require('readable-stream');
+}
+
+var counter = 0;
+
+var liner = new stream.Transform( { objectMode: true } )
+
+liner._transform = function (chunk, encoding, done) {
+    var data = chunk.toString()
+    if (this._lastLineData)
+        data = this._lastLineData + data
+    var lines = data.split('\n')
+    this._lastLineData = lines.splice(lines.length-1,1)[0]
+    lines.forEach(this.push.bind(this))
+    done()
+}
+ 
+liner._flush = function (done) {
+    if (this._lastLineData)
+        this.push(this._lastLineData)
+    this._lastLineData = null
+    done()
+}
 
 function list(str) {
     return str.split(',');
@@ -20,6 +42,135 @@ function log(message) {
     }
 }
 
+// ## The parser
+// parses input files for occurences of function calls to
+// the localize function
+function parseFun (string, fun) {
+    const states = {
+        INIT            : 0,
+        F_START         : 1,
+        F_ARG_START     : 2,
+        F_ARG           : 3,
+        F_ARG_STR       : 4,
+        F_ARG_END       : 5
+    }
+    var state  = states.F_START;
+    var buffer = '';
+    var quote  = '';
+    var braces = 0;
+    var args   = [];
+    var final  = [];
+
+    var start  = string.indexOf(fun);
+    if (start === -1){
+        return final;
+    } else {
+        start += fun.length;
+    }
+    for (var i = start; i < string.length; i++) {
+        c = string[i];
+        switch (state)
+        {
+            // Finding first match
+            case states.INIT:
+            start = string.indexOf(fun);
+            if (start === -1){
+                return final;
+            }
+            i = start + fun.length - 1;
+            state = states.F_START;
+            break;
+
+            // Beginning to parse, expecting '(' or whitespace
+            case states.F_START:
+            if (c === '('){
+                state = states.F_ARG_START;
+            } else if (c !== ' ' || c !== '\t'){
+                buffer = '';
+            }
+            break;
+
+            // Expecting function param start
+            case states.F_ARG_START:
+            if (c !== ' ' && c !== '\t'){
+                state = states.F_ARG; /* fall through */
+            } else {
+                break;
+            }
+
+            // Expecting function param
+            case states.F_ARG:
+            if (c === '('){
+                braces++;
+                break;
+            } else if (c === ')' || c === ','){
+                state = states.F_ARG_END;
+                /* fall through */
+            } else if (c === '"' || c === '\'') {
+                state = states.F_ARG_STR;
+                quote = c;
+                break;
+            } else if (c === ' ' || c === '\t') {
+                state = states.F_ARG_END;
+                break;
+            } else {
+                buffer += c;
+                break;
+            }
+
+            // Expecting end of arg (,)
+            case states.F_ARG_END:
+            if (c === ','){
+                if (quote.length === 1){
+                    quote = '';
+                    args.push({ string : true, value : buffer});
+                } else {
+                    args.push({ string : false, value : buffer});
+                }
+                buffer = '';
+                state = states.F_ARG_START;
+            } else if (c === ')'){
+                if (braces > 0){
+                    braces--;
+                } else {
+                    // Function complete
+                    if (quote.length === 1){
+                        quote = '';
+                        args.push({ string : true, value : buffer});
+                    } else {
+                        args.push({ string : false, value : buffer});
+                    }
+                    final.push(args);
+                    // Re-initiate parser
+                    string = string.substring(++i);
+                    state  = states.INIT;
+                    buffer = '';
+                    args   = [];
+                    i      = 0;
+                }
+            } else if (c !== ' ' && c !== '\t') {
+                state = states.INIT;
+                string = string.substring(i);
+            }
+            break;
+
+            // Expecting string or end of string
+            case states.F_ARG_STR:
+            if (c === quote){
+                // End of string
+                state = states.F_ARG_END;
+            } else if (c === '\\') {
+                buffer += string[++i];
+            } else {
+                buffer += c;
+            }
+            break;
+        }
+    }
+    return final;
+}
+
+// Setup the argument parser and the options
 commander
     .version(require('../package.json').version)
     .option('-l, --language <lang>', 'Set the default language for the translations.json file(s) (default: en)', 'en')
@@ -29,10 +180,8 @@ commander
     .option('-t, --translate-to <langs>', 'Set the languages to translate to (comma separated)', list, [])
     .option('-o, --output-dir <dir>', 'Set the output directory for the translations.json file(s) (default: current dir)', process.cwd())
     .option('-v, --verbose', 'Verbose output (default: false)', false)
+    .option('--function-name <name>', 'Set the translation function name (default: translate)', 'translate')
     .parse(process.argv);
-
-// Set internal localize object to use the user's default language
-localize.setLocale(commander.language);
 
 // ## The *mergeObjs* function
 // is a helper function that clones the value of various object into a new one.
@@ -52,9 +201,90 @@ function mergeObjs() {
     return outObj;
 }
 
+
 // ## The *processFile* function
 // extracts all translatable pieces of a source file into the dirJSON object,
 // unless already there.
+function processFile (filename, dirJSON, cb) {
+    // Do not process itself
+    if (filename === __filename) {
+        log('Skipping ' + filename);
+        if (cb){
+            cb(dirJSON);
+        }
+        return;
+    }
+
+    var funs = [];
+
+    // Process files
+    log('Processing ' + filename + '...');
+    var filestream = fs.createReadStream(filename);
+    filestream.pipe(liner);
+    liner.on('readable', function () {
+        var line
+        while (line = liner.read()) {
+            funs = funs.concat(parseFun(line, commander.functionName));
+        }
+    });
+    liner.on('end', function () {
+        console.log(funs);
+        if(funs) {
+            /* jshint loopfunc: true */
+            for(var i = 0; i < funs.length; i++) {
+                var args = funs[i];
+                console.log("ARGS: ");
+                console.log(args[0].string);
+                if (args.length === 0)
+                    continue;
+                if (args[0].string){
+                    var s = args[0].value;
+                    if(!dirJSON[s]) { // Does not yet exist
+                        dirJSON[s] = {};
+                    }
+                    commander.translateTo.forEach(function(lang) {
+                        if(!dirJSON[s][lang]) { // No translation, yet
+                            dirJSON[s][lang] = "MISSING TRANSLATION";
+                        }
+                    });
+                } else {
+                    // FIXME !!!
+                    // Detect if string or variable
+                    // If variable: "FOUND VARIABLE INPUT: "
+                    // If String and vars: String as key, var placeholders in transl.
+                    var translateMessage = "FOUND VARIABLE INPUT: " + args[0];
+                    /*
+                    for (var j = 1; j <= funs[i].length; j++) {
+                        var el = funs[i][j];
+                        translateMessage += "$[" + j + "] " + "(" + el + ")";
+                    };
+                    */
+                    dirJSON[translateMessage] = {};
+                    commander.translateTo.forEach(function(lang) {
+                        dirJSON[translateMessage][lang] = "MISSING TRANSLATION";
+                    });
+                }
+            }
+        }
+        if (cb){
+            cb(dirJSON);
+        }
+    });
+    //console.log(funs);
+    /*
+    if (translatables) {
+        jshint loopfunc: true 
+        for (var i = 0; i < translatables.length; i++) {
+            var trans_arr = translatables[i];
+        };
+    }
+    */
+}
+
+// ## The *processFile* function
+// extracts all translatable pieces of a source file into the dirJSON object,
+// unless already there.
+/*
 function processFile(filename, dirJSON) {
     // Check that we don't localize ourselves
     if (filename == __filename) {
@@ -67,7 +297,7 @@ function processFile(filename, dirJSON) {
     var translatables = fileContents.match(/translate\s*\(.*\)/g);
     //console.log(translatables);
     if(translatables) {
-        /* jshint loopfunc: true */
+        // jshint loopfunc: true
         for(var i = 0; i < translatables.length; i++) {
             console.log(funParse(translatables[i], 'translate'));
             if(/^translate\s*\(\s*['"](.*)['"]$/.test(translatables[i])) { // A string-looking thing
@@ -89,77 +319,7 @@ function processFile(filename, dirJSON) {
         }
     }
 }
-
-function funParse(string, fun) {
-    const states = {
-        INIT        : 0,
-        FUNC_FOUND  : 1,
-        FUNC_START  : 2,
-        FUNC_ARGS   : 3,
-        FUNC_STR    : 4
-    }
-    var state = states.INIT;
-    var content = [];
-    var buffer = '';
-    start = string.indexOf(fun);
-    if (start == -1)
-        return content;
-    for (var i = start; i < string.length; i++) {
-        c = string[i];
-        switch (state) {
-            case states.INIT:
-                if (c == ' ' || c == '\t') {
-                    buffer = '';
-                    break;
-                } else {
-                    buffer += c;
-                }
-                if (buffer == fun){
-                    buffer = '';
-                    state = states.FUNC_FOUND;
-                }
-                break;
-            case states.FUNC_FOUND:
-                if (c == '(') {
-                    state = states.FUNC_START;
-                } else if (c == ' ' || c == '\t') {
-                    break;
-                } else {
-                    state = states.INIT;
-                }
-                break;
-            case states.FUNC_START:
-                if (c == '"' || c == '\'') {
-                    state = states.FUNC_STR;
-                } else if (c != ' ' && c != '\t') {
-                    state = states.INIT; // First argument must be a string
-                }
-                break;
-            case states.FUNC_STR:
-                if (c == '"' || c == '\'') {
-                    content.push(buffer);
-                    buffer = '';
-                    state = states.FUNC_ARGS;
-                } else if (c == '\\') {
-                    i++;
-                } else {
-                    buffer += c;
-                }
-                break;
-            case states.FUNC_ARGS:
-                if (c == ')') {
-                    state = states.INIT;
-                    buffer = '';
-                    string = string.substring(i);
-                    var s = string.indexOf(fun);
-                    if (s == -1) {
-                        return content;
-                    }
-                }
-                break;
-        }
-    }
-}
+*/
 
 // ## The *processDir* function
 // generates a ``translations.json`` file for the current directory, but does
@@ -188,7 +348,16 @@ function processDir(dir) {
     var files = fs.readdirSync(dir);
     files.forEach(function(file) {
         if(fs.statSync(path.join(dir, file)).isFile() && extRegExp.test(file)) {
-            processFile(path.join(dir, file), dirJSON);
+            counter++;
+            console.log("INC Counter to " + counter);
+            console.log("Call processFile " + path.join(dir, file));
+            processFile(path.join(dir, file), dirJSON, function(dirJSON){
+                counter--;
+                console.log(counter);
+                if (counter === 0){
+                    fs.writeFileSync(translations, JSON.stringify(dirJSON, null, "  "), "utf8");
+                } 
+            });
         }
         if(commander.recursive && fs.statSync(path.join(dir, file)).isDirectory() && file != '.git') {
             processDir(path.join(dir, file));
@@ -196,7 +365,7 @@ function processDir(dir) {
     });
 
     // Output dirJSON to file
-    fs.writeFileSync(translations, JSON.stringify(dirJSON, null, "	"), "utf8");
+    //fs.writeFileSync(translations, JSON.stringify(dirJSON, null, "	"), "utf8");
 }
 
 // Get the ball rollin'
