@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/Larnixva/jall.svg)](https://travis-ci.org/Larnixva/jall) [![Dependency Status](https://gemnasium.com/Larnixva/jall.svg)](https://gemnasium.com/Larnixva/jall)
+[![npm module](http://img.shields.io/npm/v/jall.svg?style=flat)](https://www.npmjs.org/package/jall) [![Build Status](http://img.shields.io/travis/Larnixva/jall.svg?style=flat)](https://travis-ci.org/Larnixva/jall) [![Dependency Status](http://img.shields.io/gemnasium/Larnixva/jall.svg?style=flat)](https://gemnasium.com/Larnixva/jall)
 
 # The *jall* library
 provides a [GNU gettext](http://www.gnu.org/s/gettext/)-inspired (but not conformant) translation utility for [Node.js](http://nodejs.org) that tries to avoid some of the limitations of the ``sprintf``-bound ``gettext`` (such as translation string parameters being in a fixed order in all translation results) and "fit in" better than a straight port.
