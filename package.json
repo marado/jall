@@ -1,9 +1,15 @@
 {
   "name": "jall",
   "description": "A GNU gettext-inspired (but not conformant) localization library for Node.js",
+  "keywords" : [
+    "localization",
+    "localize"
+  ],
   "homepage": "https://github.com/Larnixva/jall",
+  "bugs": "https://github.com/Larnixva/jall/issues",
+  "license" : "MIT",
   "repository": "git@github.com:Larnixva/jall",
-  "author": "Andreas Mieke <andreas@1750studios.com>",
+  "author": "Andreas Mieke <andreas@1750studios.com> (http://www.1750studios.com)",
   "contributors": [
     "David Ellis",
     "Steven Levithan",
@@ -12,6 +18,10 @@
     "Jerry Jalava",
     "Marvin Scholz"
   ],
+  "repository" : {
+    "type" : "git",
+    "url" : "http://github.com/Larnixva/jall.git"
+  },
   "version": "0.4.9",
   "main": "./lib/jall",
   "dependencies": {
@@ -22,7 +32,7 @@
     "mocha": "~1.21.4"
   },
   "engines": {
-    "node": "*"
+    "node": ">=0.10.0"
   },
   "bin": {
     "xjall": "./bin/xjall.js"

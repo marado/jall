@@ -267,7 +267,7 @@ If you're using jall on the client in this fashion, it would be wise to add ``ge
 
 ## License (MIT)
 
-Copyright (C) 2011 by Agrosica, Inc, David Ellis, Felix Geisendörfer, Steven Levithan, Scott Trenda, Kris Kowal, Jerry Jalava, Clint Andrew Hall.
+Copyright (C) 2011-2014 Agrosica, Inc, David Ellis, Felix Geisendörfer, Steven Levithan, Scott Trenda, Kris Kowal, Jerry Jalava, Clint Andrew Hall, Marvin Scholz, Andreas Mieke.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
