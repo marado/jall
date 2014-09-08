@@ -1,12 +1,12 @@
 {
 	"This is a sample .ejs file.": {
-		"en": "MISSING TRANSLATION",
-		"de": "MISSING TRANSLATION",
-		"pt": "MISSING TRANSLATION"
+		"en": "MISSING TRANSLATION FOR: This is a sample .ejs file.",
+		"de": "MISSING TRANSLATION FOR: This is a sample .ejs file.",
+		"pt": "MISSING TRANSLATION FOR: This is a sample .ejs file."
 	},
 	"Don't forget to buy some milk.": {
-		"en": "MISSING TRANSLATION",
-		"de": "MISSING TRANSLATION",
-		"pt": "MISSING TRANSLATION"
+		"en": "MISSING TRANSLATION FOR: Don't forget to buy some milk.",
+		"de": "MISSING TRANSLATION FOR: Don't forget to buy some milk.",
+		"pt": "MISSING TRANSLATION FOR: Don't forget to buy some milk."
 	}
 }

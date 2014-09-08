@@ -3,6 +3,6 @@
 		"en": "You called foo!",
 		"de": "Foo wurde aufgerufen!",
 		"pt": "Foo foi executado!",
-		"es": "MISSING TRANSLATION"
+		"es": "MISSING TRANSLATION FOR: You called foo!"
 	}
 }

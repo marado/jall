@@ -1,7 +1,7 @@
 {
 	"You called foo!": {
-		"en": "MISSING TRANSLATION",
-		"de": "MISSING TRANSLATION",
-		"pt": "MISSING TRANSLATION"
+		"en": "MISSING TRANSLATION FOR: You called foo!",
+		"de": "MISSING TRANSLATION FOR: You called foo!",
+		"pt": "MISSING TRANSLATION FOR: You called foo!"
 	}
 }

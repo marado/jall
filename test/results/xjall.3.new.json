@@ -3,12 +3,12 @@
 		"en": "This page is in English.",
 		"de": "Diese Seite ist deutsch.",
 		"pt": "Esta página é em português.",
-		"es": "MISSING TRANSLATION"
+		"es": "MISSING TRANSLATION FOR: This page is in English."
 	},
 	"You called foo!": {
 		"en": "You called foo!",
 		"de": "Foo wurde aufgerufen!",
 		"pt": "Foo foi executado!",
-		"es": "MISSING TRANSLATION"
+		"es": "MISSING TRANSLATION FOR: You called foo!"
 	}
 }

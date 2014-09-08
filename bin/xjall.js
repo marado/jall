@@ -278,14 +278,14 @@ function processDir(dir) {
                             }
                             commander.translateTo.forEach(function(lang) {
                                 if(!dirJSON[s][lang]) { // No translation, yet
-                                    dirJSON[s][lang] = "MISSING TRANSLATION";
+                                    dirJSON[s][lang] = "MISSING TRANSLATION FOR: " + s;
                                 }
                             });
                         } else {
                             var translateMessage = "FOUND VARIABLE INPUT: " + args[0];
                             dirJSON[translateMessage] = {};
                             commander.translateTo.forEach(function(lang) {
-                                dirJSON[translateMessage][lang] = "MISSING TRANSLATION";
+                                dirJSON[translateMessage][lang] = "MISSING TRANSLATION FOR: " + translateMessage;
                             });
                         }
                     }

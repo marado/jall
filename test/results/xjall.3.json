@@ -1,12 +1,12 @@
 {
 	"This page is in English.": {
-		"en": "MISSING TRANSLATION",
-		"de": "MISSING TRANSLATION",
-		"pt": "MISSING TRANSLATION"
+		"en": "MISSING TRANSLATION FOR: This page is in English.",
+		"de": "MISSING TRANSLATION FOR: This page is in English.",
+		"pt": "MISSING TRANSLATION FOR: This page is in English."
 	},
 	"You called foo!": {
-		"en": "MISSING TRANSLATION",
-		"de": "MISSING TRANSLATION",
-		"pt": "MISSING TRANSLATION"
+		"en": "MISSING TRANSLATION FOR: You called foo!",
+		"de": "MISSING TRANSLATION FOR: You called foo!",
+		"pt": "MISSING TRANSLATION FOR: You called foo!"
 	}
 }
