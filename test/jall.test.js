@@ -307,3 +307,23 @@ describe('test translation strings txt files', function() {
         done();
     });
 });
+
+describe('test translation strings txt files with specified path', function() {
+    var goodLocalize;
+    it('should not throw an error', function(done) {
+        assert.doesNotThrow(function() {
+            goodLocalize = new Localize('./test/translations', 'translations2');
+            goodLocalize.translate(goodLocalize.strings.helloWorld);
+            goodLocalize.setLocale("es");
+            goodLocalize.translate(goodLocalize.strings.helloWorld);
+            goodLocalize.setLocale("en");
+        });
+        done();
+    });
+    it('should provide right translations from the string.txts', function(done) {
+        assert.strictEqual(goodLocalize.translate(goodLocalize.strings.helloWorld), "Hello, World 2!\n");
+        goodLocalize.setLocale("es");
+        assert.strictEqual(goodLocalize.translate(goodLocalize.strings.helloWorld), "¡Hola, mundo 2!\n");
+        done();
+    });
+});

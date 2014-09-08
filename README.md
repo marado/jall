@@ -90,9 +90,10 @@ The date formatting rules and configuration have been taken from [node-dateforma
 ## Complete API
 
 ```js
-var myLocalize = new Localize(translationsObjOrStr, dateFormatObj, defaultLocaleStr);
+var myLocalize = new Localize(translationsObjOrStr, pathToStrings, dateFormatObj, defaultLocaleStr);
 // translationsObjOrStr: a conformant translations object or a string indicating
 //     the directory where one or more conformant translations.json files are stored
+// path (relative to the directory of the translationsObject path) of the longstring txt files
 // dateFormatObj: a conformant date format object, containing one or more locales
 //     if not specified, will auto-generate an 'en' locale; if initially specified,
 //     will *overwrite* this auto-generated locale object
