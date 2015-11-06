@@ -39,6 +39,8 @@ myLocalize.setLocale("sr");
 console.log(myLocalize.translate("Substitution: $[1]", 5)); // замена: 5
 ```
 
+Notice that, in the example above, ``"Testing..."`` isn't an id, it is the actual untranslated sentence (in the default language -- English, in the case).
+
 ``jall`` objects can also be passed a string indicating the directory a ``translations.json`` file can be found. This directory is searched recursively for all ``translations.json`` files in all subdirectories, and their contents combined together, so you can organize your translations as you wish.
 
 The directory is also searched recursively for directories named ``translations``. These directories are checked for special text files of the form ``varname.txt``, ``varname.es.txt``, ``varname.sr.txt``, etc. The text in ``varname.txt`` is treated as the default language of the application and the ``varname.xx.txt`` are treated as translations of the text. A special ``strings`` object is created where the ``varname`` becomes a property of that object and the default language text is the value of the property. So you can also do the following:
