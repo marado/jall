@@ -8,10 +8,6 @@ Changelog
 - **Changed**
   - _Tests:_ Adapted tests to suit issue [#4](https://github.com/ToddShepard/jall/issues/4)
   - _Tests:_ Adapted tests to suit issue [#3](https://github.com/ToddShepard/jall/issues/3)
-  - _library:_ Translations for the default language are now loaded automaticly [#5](https://github.com/ToddShepard/jall/issues/5)
-  - _library:_ Dealing better with non-translated strings [#6](https://github.com/ToddShepard/jall/issues/6)
-  - _Package:_ Fixed links
-  - _Package:_ Version bump
 
 ## Version [0.4.9](https://github.com/ToddShepard/jall/releases/tag/v0.4.9)
 - **Changed**
