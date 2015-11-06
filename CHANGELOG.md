@@ -8,6 +8,7 @@ Changelog
 - **Changed**
   - _Tests:_ Adapted tests to suit issue [#4](https://github.com/ToddShepard/jall/issues/4)
   - _Tests:_ Adapted tests to suit issue [#3](https://github.com/ToddShepard/jall/issues/3)
+  - _Package:_ Fixed links
 
 ## Version [0.4.9](https://github.com/ToddShepard/jall/releases/tag/v0.4.9)
 - **Changed**
