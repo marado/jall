@@ -5,10 +5,10 @@
     "localization",
     "localize"
   ],
-  "homepage": "https://github.com/Larnixva/jall",
-  "bugs": "https://github.com/Larnixva/jall/issues",
+  "homepage": "https://github.com/ToddShepard/jall",
+  "bugs": "https://github.com/ToddShepard/jall/issues",
   "license" : "MIT",
-  "repository": "git@github.com:Larnixva/jall",
+  "repository": "git@github.com:ToddShepard/jall",
   "author": "Andreas Mieke <andreas@1750studios.com> (http://www.1750studios.com)",
   "contributors": [
     "David Ellis",
@@ -20,7 +20,7 @@
   ],
   "repository" : {
     "type" : "git",
-    "url" : "http://github.com/Larnixva/jall.git"
+    "url" : "http://github.com/ToddShepard/jall.git"
   },
   "version": "0.4.9",
   "main": "./lib/jall",
